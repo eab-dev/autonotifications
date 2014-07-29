@@ -1,111 +1,111 @@
 <?php
 class AutoNotificationsType extends eZWorkflowEventType
 {
-    const WORKFLOW_TYPE_STRING = "autonotifications";
+	const WORKFLOW_TYPE_STRING = "autonotifications";
 
-    function __construct()
-    {
-        $this->eZWorkflowEventType( self::WORKFLOW_TYPE_STRING, "AutoNotifications"  );
-        $this->setTriggerTypes( array( 'content' => array( 'publish' => array( 'after' ) ) ) );
-    }
+	function __construct()
+	{
+		$this->eZWorkflowEventType( self::WORKFLOW_TYPE_STRING, "AutoNotifications"  );
+		$this->setTriggerTypes( array( 'content' => array( 'publish' => array( 'after' ) ) ) );
+	}
 
-    function attributeDecoder( $event, $attr )
-    {
-        switch ( $attr )
-        {
-            case 'selected_usergroups':
-            {
-                $attributeValue = trim( $event->attribute( 'data_text1' ) );
-                $returnValue = empty( $attributeValue ) ? array() : explode( ',', $attributeValue );
-            }break;
+	function attributeDecoder( $event, $attr )
+	{
+		switch ( $attr )
+		{
+			case 'selected_usergroups':
+			{
+				$attributeValue = trim( $event->attribute( 'data_text1' ) );
+				$returnValue = empty( $attributeValue ) ? array() : explode( ',', $attributeValue );
+			}break;
 
 			case 'selected_subtrees':
-            {
-                $attributeValue = trim( $event->attribute( 'data_text2' ) );
-                $returnValue = empty( $attributeValue ) ? array() : explode( ',', $attributeValue );
-            }break;
+			{
+				$attributeValue = trim( $event->attribute( 'data_text2' ) );
+				$returnValue = empty( $attributeValue ) ? array() : explode( ',', $attributeValue );
+			}break;
 
-             default:
-                $returnValue = null;
-        }
-        return $returnValue;
-    }
+			 default:
+				$returnValue = null;
+		}
+		return $returnValue;
+	}
 
-    function typeFunctionalAttributes( )
-    {
-        return array('selected_usergroups', 'selected_subtrees' );
-    }
+	function typeFunctionalAttributes( )
+	{
+		return array('selected_usergroups', 'selected_subtrees' );
+	}
 
-    function attributes()
-    {
-        return array_merge( array( 'usergroups','subtrees' ), eZWorkflowEventType::attributes() );
-    }
+	function attributes()
+	{
+		return array_merge( array( 'usergroups','subtrees' ), eZWorkflowEventType::attributes() );
+	}
 
-    function hasAttribute( $attr )
-    {
-        return in_array( $attr, $this->attributes() );
-    }
+	function hasAttribute( $attr )
+	{
+		return in_array( $attr, $this->attributes() );
+	}
 
-    function attribute( $attr )
-    {
-        switch( $attr )
-        {
-            case 'usergroups':
-            {
-                $groups = eZPersistentObject::fetchObjectList( eZContentObject::definition(), array( 'id', 'name' ),
-                                                                array( 'contentclass_id' => 3 ), null, null, false );
-                foreach ( $groups as $key => $group )
-                {
-                    $groups[$key]['Name'] = $group['name'];
-                    $groups[$key]['value'] = $group['id'];
-                }
-                return $groups;
-            }
-            break;
-        }
-        return eZWorkflowEventType::attribute( $attr );
-    }
+	function attribute( $attr )
+	{
+		switch( $attr )
+		{
+			case 'usergroups':
+			{
+				$groups = eZPersistentObject::fetchObjectList( eZContentObject::definition(), array( 'id', 'name' ),
+																array( 'contentclass_id' => 3 ), null, null, false );
+				foreach ( $groups as $key => $group )
+				{
+					$groups[$key]['Name'] = $group['name'];
+					$groups[$key]['value'] = $group['id'];
+				}
+				return $groups;
+			}
+			break;
+		}
+		return eZWorkflowEventType::attribute( $attr );
+	}
 
-    function execute( $process, $event )
-    {
+	function execute( $process, $event )
+	{
 		$parameters = $process->attribute( 'parameter_list' );
-        $objectID = $parameters['object_id'];
-        $object = eZContentObject::fetch( $objectID );
+		$objectID = $parameters['object_id'];
+		$object = eZContentObject::fetch( $objectID );
 
-        $subtrees = $event->attribute( 'selected_subtrees' );
-        $groups = $event->attribute( 'selected_usergroups' );
-        $userClassIDArray=eZUser::fetchUserClassNames();
+		$subtrees = $event->attribute( 'selected_subtrees' );
+		$groups = $event->attribute( 'selected_usergroups' );
+		$userClassIDArray=eZUser::fetchUserClassNames();
 
 		if ( !$object )
-        {
-            eZDebugSetting::writeError( 'kernel-workflow-autonotifications', "No object with ID $objectID", 'AutoNotificationsType::execute' );
-            return eZWorkflowType::STATUS_WORKFLOW_CANCELLED;
-        }
-        if(in_array($object->attribute('class_identifier'), $userClassIDArray) && is_array($subtrees) && !empty($subtrees) && is_array($groups) && !empty($groups))
+		{
+			eZDebugSetting::writeError( 'kernel-workflow-autonotifications', "No object with ID $objectID", 'AutoNotificationsType::execute' );
+			return eZWorkflowType::STATUS_WORKFLOW_CANCELLED;
+		}
+		if(in_array($object->attribute('class_identifier'), $userClassIDArray) && is_array($subtrees) && !empty($subtrees) && is_array($groups) && !empty($groups))
 		{
 			foreach ( $groups as $groupID )
-            {
-                if ( $groupID != false )
-                {
-                    $group = eZContentObject::fetch( $groupID );
-                    if ( isset( $group ) )
-                    {
-                        foreach ( $group->attribute( 'assigned_nodes' ) as $assignedNode )
-                        {
-                            $userNodeArray = $assignedNode->subTree( array( 'ClassFilterType' => 'include',
-                                                                            'ClassFilterArray' => $userClassIDArray,
-                                                                            'Limitation' => array() ) );
-                            foreach ( $userNodeArray as $userNode )
-                            {
-                                $userIDArray[] = $userNode->attribute( 'contentobject_id' );
-                            }
-                        }
-                    }
-                }
-            }
-            $userIDArray = array_unique( $userIDArray );
-            if(in_array($objectID, $userIDArray))
-            {
+			{
+				if ( $groupID != false )
+				{
+					$group = eZContentObject::fetch( $groupID );
+					if ( isset( $group ) )
+					{
+						foreach ( $group->attribute( 'assigned_nodes' ) as $assignedNode )
+						{
+							$userNodeArray = $assignedNode->subTree( array( 'ClassFilterType' => 'include',
+																			'ClassFilterArray' => $userClassIDArray,
+																			'Limitation' => array() ) );
+							foreach ( $userNodeArray as $userNode )
+							{
+								$userIDArray[] = $userNode->attribute( 'contentobject_id' );
+							}
+						}
+					}
+				}
+			}
+			$userIDArray = array_unique( $userIDArray );
+			if(in_array($objectID, $userIDArray))
+			{
 				foreach($subtrees as $subtree)
 				{
 					$rule =eZSubtreeNotificationRule::create( $subtree, $objectID );
@@ -114,15 +114,15 @@ class AutoNotificationsType extends eZWorkflowEventType
 			}
 		}
 		return EZ_WORKFLOW_TYPE_STATUS_ACCEPTED;
-    }
+	}
 
-    function validateHTTPInput( $http, $base, $workflowEvent, &$validation )
-    {
+	function validateHTTPInput( $http, $base, $workflowEvent, &$validation )
+	{
 		$returnState = eZInputValidator::STATE_ACCEPTED;
-        $reason = array();
+		$reason = array();
 
-        if ( !$http->hasSessionVariable( 'BrowseParameters' ) )
-        {
+		if ( !$http->hasSessionVariable( 'BrowseParameters' ) )
+		{
 			$selected_subtrees = array_unique( $this->attributeDecoder( $workflowEvent, 'selected_subtrees' ) );
 			if ( is_array( $selected_subtrees ) and
 				 count( $selected_subtrees ) > 0 )
@@ -136,23 +136,23 @@ class AutoNotificationsType extends eZWorkflowEventType
 						$reason[ 'list' ][] = $SubtreeID;
 					}
 				}
-				$reason[ 'text' ] = "Certaines sous-arborescences sont incorrectes";
+				$reason[ 'text' ] = ezpI18n::tr( "design/autonotifications", "Some subtrees are incorrect" );
 			}
 		}
 
 		if ( $returnState == eZInputValidator::STATE_INVALID )
-        {
-            $validation[ 'processed' ] = true;
-            $validation[ 'events' ][] = array( 'id' => $workflowEvent->attribute( 'id' ),
-                                               'placement' => $workflowEvent->attribute( 'placement' ),
-                                               'workflow_type' => &$this,
-                                               'reason' => $reason );
-        }
-        return $returnState;
+		{
+			$validation[ 'processed' ] = true;
+			$validation[ 'events' ][] = array( 'id' => $workflowEvent->attribute( 'id' ),
+											   'placement' => $workflowEvent->attribute( 'placement' ),
+											   'workflow_type' => &$this,
+											   'reason' => $reason );
+		}
+		return $returnState;
 	}
 
-    function fetchHTTPInput( $http, $base, $event )
-    {
+	function fetchHTTPInput( $http, $base, $event )
+	{
 		$usersVar = $base . "_event_autonotifications_selected_usergroups_" . $event->attribute( "id" );
 		if ( $http->hasPostVariable( $usersVar ) )
 		{
@@ -192,9 +192,9 @@ class AutoNotificationsType extends eZWorkflowEventType
 				}
 			}
 		}
-    }
+	}
 
-    function customWorkflowEventHTTPAction( $http, $action, $workflowEvent )
+	function customWorkflowEventHTTPAction( $http, $action, $workflowEvent )
 	{
 		$eventID = $workflowEvent->attribute( "id" );
 		$module =& $GLOBALS['eZRequestedModule'];
@@ -211,13 +211,13 @@ class AutoNotificationsType extends eZWorkflowEventType
 										 $module );
 			} break;
 			case 'RemoveSubtrees' :
-            {
-                if ( $http->hasPostVariable( 'RemoveSubtreesIDArray_' . $eventID ) )
-                {
-                    $workflowEvent->setAttribute( 'data_text2', implode( ',', array_diff( $this->attributeDecoder( $workflowEvent, 'selected_subtrees' ),
-                                                                                          $http->postVariable( 'RemoveSubtreesIDArray_' . $eventID ) ) ) );
-                }
-            } break;
+			{
+				if ( $http->hasPostVariable( 'RemoveSubtreesIDArray_' . $eventID ) )
+				{
+					$workflowEvent->setAttribute( 'data_text2', implode( ',', array_diff( $this->attributeDecoder( $workflowEvent, 'selected_subtrees' ),
+																						  $http->postVariable( 'RemoveSubtreesIDArray_' . $eventID ) ) ) );
+				}
+			} break;
 		}
 	}
 
