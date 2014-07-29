@@ -129,8 +129,7 @@ class AutoNotificationsType extends eZWorkflowEventType
 			{
 				foreach( $selected_subtrees as $SubtreeID )
 				{
-					if ( !is_numeric( $SubtreeID ) or
-						 !is_object( $Subtree = eZContentObject::fetch( $SubtreeID ) ) )
+					if ( !is_numeric( $SubtreeID ) || !is_object( $Subtree = eZContentObjectTreeNode::fetch( $SubtreeID ) ) )
 					{
 						$returnState = eZInputValidator::STATE_INVALID;
 						$reason[ 'list' ][] = $SubtreeID;
@@ -147,6 +146,7 @@ class AutoNotificationsType extends eZWorkflowEventType
 											   'placement' => $workflowEvent->attribute( 'placement' ),
 											   'workflow_type' => &$this,
 											   'reason' => $reason );
+			exit;
 		}
 		return $returnState;
 	}
