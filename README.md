@@ -28,6 +28,8 @@ TO INSTALL
 
 5. Bind the post-publish trigger to the workflow you've created.
 
-6. If you want to add notifications to existing users (as if they had just registered) then after setting up the workflow run
+6. If you want to add notifications to existing users (as if they had just registered) then after setting up the workflow run:
 
+```
 php extension/autonotifications/bin/php/update_existing_users.php
+```
