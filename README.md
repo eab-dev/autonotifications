@@ -16,9 +16,21 @@ LICENSE
 GPL 2.0
 
 TO INSTALL
------------
+----------
 
-1. Install and activate the extension in the usual way.
+1. Install and activate the extension in the usual way:
+
+    a. Copy the `autonotifications` folder to the `extension` folder.
+
+    b. Edit `settings/override/site.ini.append.php`
+
+    c. Under `[ExtensionSettings]` add:
+
+        ActiveExtensions[]=autonotifications
+
+    d. Clear the cache:
+
+        bin/php/ezcache.php --clear-all
 
 2. In the admin interface, create a workflow that contains this event.
 
@@ -28,8 +40,10 @@ TO INSTALL
 
 5. Bind the post-publish trigger to the workflow you've created.
 
-6. If you want to add notifications to existing users (as if they had just registered) then after setting up the workflow run:
 
-```
-php extension/autonotifications/bin/php/update_existing_users.php
-```
+USAGE
+-----
+
+If you want to add notifications to existing users (as if they had just registered) then after setting up the workflow run:
+
+    php extension/autonotifications/bin/php/update_existing_users.php
