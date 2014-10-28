@@ -111,6 +111,7 @@ class AutoNotificationsType extends eZWorkflowEventType
 					$rule =eZSubtreeNotificationRule::create( $subtree, $objectID );
 					$rule->store();
 				}
+				$this->setDigestOptions( $objectID );
 			}
 		}
 		return EZ_WORKFLOW_TYPE_STATUS_ACCEPTED;
@@ -218,6 +219,45 @@ class AutoNotificationsType extends eZWorkflowEventType
 																						  $http->postVariable( 'RemoveSubtreesIDArray_' . $eventID ) ) ) );
 				}
 			} break;
+		}
+	}
+
+	function setDigestOptions( $userID )
+	{
+		$ini = eZINI::instance( 'autonotifications.ini' );
+		$digestType = $ini->variable( 'DigestSettings', 'DigestType' ); // can be 'None', 'Daily', 'Weekly', 'Monthly'
+		if ( digestType != 'Skip' )
+		{
+			$settings = eZGeneralDigestUserSettings::fetchByUserId( $userID );
+			if ( $settings == null )
+				$settings = eZGeneralDigestUserSettings::create( $userID );
+
+			if ( digestType == 'None' )
+			{
+				$settings->setAttribute( 'receive_digest', 0 );
+			}
+			else
+			{
+				$settings->setAttribute( 'receive_digest', 1 );
+				switch ( $digestType )
+				{
+					case 'Daily':
+						$settings->setAttribute( 'digest_type', eZGeneralDigestUserSettings::TYPE_DAILY );
+						break;
+
+					case 'Monthly':
+						$settings->setAttribute( 'digest_type', eZGeneralDigestUserSettings::TYPE_MONTHLY );
+						$settings->setAttribute( 'day', $ini->variable( 'DigestSettings', 'MonthDay' ) );
+						break;
+
+					case 'Weekly':
+						$settings->setAttribute( 'digest_type', eZGeneralDigestUserSettings::TYPE_WEEKLY );
+						$settings->setAttribute( 'day', $ini->variable( 'DigestSettings', 'WeekDay' ) );
+						break;
+				}
+				$settings->setAttribute( 'time', $ini->variable( 'DigestSettings', 'Time' ) );
+			}
+			$settings->store();
 		}
 	}
 

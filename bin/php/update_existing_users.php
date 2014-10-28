@@ -14,10 +14,12 @@ $script = eZScript::instance( array( 	'description' =>  "Add notification settin
 $script->startup();
 $script->initialize();
 
+// We need to find which user groups this update should apply to, so fetch the workflows and search for events with a matching event type
+
 $userClassIDArray = eZUser::fetchUserClassNames();
+$eventsFound = 0;
 $eventTypeString = 'event_' . AutoNotificationsType::WORKFLOW_TYPE_STRING;
 $userIDArray[] = array();
-
 $workflows = eZWorkflow::fetchList();
 
 foreach ( $workflows as $workflow )
@@ -27,6 +29,7 @@ foreach ( $workflows as $workflow )
 	{
 		if ( $event->TypeString == $eventTypeString )
 		{
+			$eventsFound++;
 			$userGroupObjectIDArray = AutoNotificationsType::attributeDecoder( $event, 'selected_usergroups' );
 			$subtrees = AutoNotificationsType::attributeDecoder( $event, 'selected_subtrees' );
 			
@@ -49,6 +52,9 @@ foreach ( $workflows as $workflow )
             $userIDArray = array_unique( $userIDArray );
 			foreach ( $userIDArray as $userID )
 			{
+				// Set the digest options according to the settings in autonotifications.ini
+				AutoNotificationsType::setDigestOptions( $userID );
+
 				// Below causes an SQL error but seems to work. Without this test, existing notifications would be duplicated
 				$notificationNodeIDList = eZSubtreeNotificationRule::fetchNodesForUserID( $userID, false );
 				foreach ( $subtrees as $subtreeNodeID )
@@ -63,6 +69,9 @@ foreach ( $workflows as $workflow )
 		}
 	}
 }
+
+if ( $eventsFound == 0 )
+	$cli->output( "No autonotification events found, have you set up a workflow?" );
 
 $script->shutdown(); //stop the script
 

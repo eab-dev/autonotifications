@@ -3,8 +3,8 @@ autonotifications
 
 SUMMARY
 ---------
-1. Add a automatic notification when a user registers.
-2. Command line script to add notifications to existing users.
+1. Add automatic notification settings when a user registers, including digest settings.
+2. Command line script to add notifications and digest settings and to existing users.
 
 Based on work by Pierre Martel http://projects.ez.no/autonotifications
 
@@ -40,6 +40,7 @@ TO INSTALL
 
 5. Bind the post-publish trigger to the workflow you've created.
 
+6. Override the digest settings with your own settings in `settings/override/autonotifications.ini.append.php`
 
 USAGE
 -----
