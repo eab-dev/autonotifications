@@ -277,9 +277,20 @@ class AutoNotificationsType extends eZWorkflowEventType
 		$digestType = $ini->variable( 'DigestSettings', 'DigestType' ); // can be 'None', 'Daily', 'Weekly', 'Monthly'
 		if ( digestType != 'Skip' )
 		{
-			$settings = eZGeneralDigestUserSettings::fetchByUserId( $userID );
-			if ( $settings == null )
-				$settings = eZGeneralDigestUserSettings::create( $userID );
+			if ( method_exists( 'eZGeneralDigestUserSettings', 'fetchByUserId' ) )
+			{
+				$settings = eZGeneralDigestUserSettings::fetchByUserId( $userID );
+				if ( $settings == null )
+					$settings = eZGeneralDigestUserSettings::create( $userID );
+			}
+			else // in eZ Publish version 4 the user's email address is the digest key
+			{
+				$user = eZUser::fetch( $userID );
+				$address = $user->Email;
+				$settings = eZGeneralDigestUserSettings::fetchForUser( $address );
+				if ( $settings == null )
+					$settings = eZGeneralDigestUserSettings::create( $address );
+			}
 
 			if ( digestType == 'None' )
 			{
