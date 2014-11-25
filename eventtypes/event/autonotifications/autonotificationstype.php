@@ -1,7 +1,20 @@
 <?php
+
+/*!
+  \class AutoNotificationsType autonotificationstype.php
+  \brief The class AutoNotificationsType allows you to set notifications for a user using workflow
+
+  WorkflowEvent storage fields : data_text1 - selected_usergroups
+                                 data_text2 - selected_subtrees
+                                 data_int3  - content object version option
+*/
+
 class AutoNotificationsType extends eZWorkflowEventType
 {
 	const WORKFLOW_TYPE_STRING = "autonotifications";
+	const VERSION_OPTION_FIRST_ONLY = 1;
+	const VERSION_OPTION_EXCEPT_FIRST = 2;
+	const VERSION_OPTION_ALL = 3;
 
 	function __construct()
 	{
@@ -25,6 +38,11 @@ class AutoNotificationsType extends eZWorkflowEventType
 				$returnValue = empty( $attributeValue ) ? array() : explode( ',', $attributeValue );
 			}break;
 
+			case 'version_option':
+			{
+				$returnValue = AutoNotificationsType::VERSION_OPTION_ALL & $event->attribute( 'data_int3' );
+			}break;
+
 			 default:
 				$returnValue = null;
 		}
@@ -33,7 +51,7 @@ class AutoNotificationsType extends eZWorkflowEventType
 
 	function typeFunctionalAttributes( )
 	{
-		return array('selected_usergroups', 'selected_subtrees' );
+		return array( 'selected_usergroups', 'selected_subtrees', 'version_option' );
 	}
 
 	function attributes()
@@ -81,6 +99,23 @@ class AutoNotificationsType extends eZWorkflowEventType
 			eZDebugSetting::writeError( 'kernel-workflow-autonotifications', "No object with ID $objectID", 'AutoNotificationsType::execute' );
 			return eZWorkflowType::STATUS_WORKFLOW_CANCELLED;
 		}
+
+		if ( isset( $parameters['version'] ) )
+		{
+			$versionID = $parameters['version'];
+			$version = $object->version( $versionID );
+
+			if ( is_object( $version ) )
+			{
+				$version_option = $event->attribute( 'version_option' );
+				if ( ( $version_option == AutoNotificationsType::VERSION_OPTION_FIRST_ONLY and $parameters['version'] > 1 ) or
+					 ( $version_option == AutoNotificationsType::VERSION_OPTION_EXCEPT_FIRST and $parameters['version'] == 1 ) )
+				{
+					return eZWorkflowType::STATUS_ACCEPTED;
+				}
+			}
+		}
+
 		if(in_array($object->attribute('class_identifier'), $userClassIDArray) && is_array($subtrees) && !empty($subtrees) && is_array($groups) && !empty($groups))
 		{
 			foreach ( $groups as $groupID )
@@ -154,6 +189,20 @@ class AutoNotificationsType extends eZWorkflowEventType
 
 	function fetchHTTPInput( $http, $base, $event )
 	{
+		$versionOptionVar = $base . "_event_autonotifications_version_option_" . $event->attribute( "id" );
+		if ( $http->hasPostVariable( $versionOptionVar ) )
+		{
+			$versionOptionArray = $http->postVariable( $versionOptionVar );
+			$versionOption = 0;
+			if ( is_array( $versionOptionArray ) )
+			{
+				foreach ( $versionOptionArray as $vv )
+					$versionOption = $versionOption | $vv;
+			}
+			$versionOption = $versionOption & AutoNotificationsType::VERSION_OPTION_ALL;
+			$event->setAttribute( 'data_int3', $versionOption );
+		}
+
 		$usersVar = $base . "_event_autonotifications_selected_usergroups_" . $event->attribute( "id" );
 		if ( $http->hasPostVariable( $usersVar ) )
 		{

@@ -4,7 +4,7 @@ autonotifications
 SUMMARY
 ---------
 1. Add automatic notification settings when a user registers, including digest settings.
-2. Command line script to add notifications and digest settings and to existing users.
+2. Command line script to add notifications and digest settings to existing users.
 
 Based on work by Pierre Martel http://projects.ez.no/autonotifications
 
@@ -32,15 +32,20 @@ TO INSTALL
 
         bin/php/ezcache.php --clear-all
 
-2. In the admin interface, create a workflow that contains this event.
+2. In the admin interface, create a workflow that contains this event:
 
-3. Select the user groups that will be affected and the subtrees that will be added to the users.
+* Choose which object versions should cause the notifications to be set. Typically you will want only
+publishing a new user object to add notifications. Otherwise notifications will be added every time the user's profile is updated.
 
-4. Save the workflow.
+* Select the user groups that will be affected
 
-5. Bind the post-publish trigger to the workflow you've created.
+* Select the subtree notifications that will be added to the users.
 
-6. Override the digest settings with your own settings in `settings/override/autonotifications.ini.append.php`
+3. Save the workflow.
+
+4. Bind the post-publish trigger to the workflow you've created.
+
+5. Override the digest settings with your own settings in `settings/override/autonotifications.ini.append.php`
 
 USAGE
 -----

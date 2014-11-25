@@ -28,6 +28,15 @@
 		</fieldset>
 	</div>
 
+	{* Affected versions option *}
+	<div class="element">
+		<label>{'Affected versions'|i18n( 'design/admin/workflow/eventtype/edit' )}:</label>
+		<select name="WorkflowEvent_event_autonotifications_version_option_{$event.id}[]" size="3" multiple="multiple">
+		<option value="0"{if or( lt($event.version_option, 1), gt($event.version_option, 2) )} selected="selected"{/if}>{'All versions'|i18n( 'design/admin/workflow/eventtype/edit' )}</option>
+		<option value="1"{if eq( $event.version_option, 1)} selected="selected"{/if}>{'Publishing new object'|i18n( 'design/admin/workflow/eventtype/edit' )}</option>
+		<option value="2"{if eq( $event.version_option, 2)} selected="selected"{/if}>{'Updating existing object'|i18n( 'design/admin/workflow/eventtype/edit' )}</option>
+		</select>
+	</div>
 
 	{* Users *}
 	<div class="element">
