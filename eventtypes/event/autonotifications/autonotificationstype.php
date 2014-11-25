@@ -19,7 +19,7 @@ class AutoNotificationsType extends eZWorkflowEventType
 	function __construct()
 	{
 		$this->eZWorkflowEventType( self::WORKFLOW_TYPE_STRING, "AutoNotifications"  );
-		$this->setTriggerTypes( array( 'content' => array( 'publish' => array( 'after' ) ) ) );
+		$this->setTriggerTypes( array( 'content' => array( 'publish' => array( 'after' ), 'move' => array( 'after' ) ) ) );
 	}
 
 	function attributeDecoder( $event, $attr )
