@@ -143,8 +143,12 @@ class AutoNotificationsType extends eZWorkflowEventType
 			{
 				foreach($subtrees as $subtree)
 				{
-					$rule =eZSubtreeNotificationRule::create( $subtree, $objectID );
-					$rule->store();
+					$existingSubtreeList = eZSubtreeNotificationRule::fetchNodesForUserID( $objectID, false );
+					if ( !in_array( $subtree, $existingSubtreeList ) )
+					{
+						$rule = eZSubtreeNotificationRule::create( $subtree, $objectID );
+						$rule->store();
+					}
 				}
 				$this->setDigestOptions( $objectID );
 			}
