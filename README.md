@@ -28,7 +28,11 @@ TO INSTALL
 
         ActiveExtensions[]=autonotifications
 
-    d. Clear the cache:
+    d. Reload the autoload arrays
+
+        bin/php/ezpgenerateautoloads.php
+
+    e. Clear the cache:
 
         bin/php/ezcache.php --clear-all
 
@@ -43,7 +47,18 @@ publishing a new user object to add notifications. Otherwise notifications will 
 
 3. Save the workflow.
 
-4. Bind the post-publish trigger to the workflow you've created.
+4. Typically you will want to bind the post-publish trigger to the workflow
+you've created. However, sometimes you want to add notifications when a user
+object is moved from one user group to another. If so, you should bind the
+workflow to the post-move trigger instead. You will need to activate this
+trigger in `settings/override/workflow.ini.append.php`:
+
+        <?php /* #?ini charset="utf-8"?
+
+        [OperationSettings]
+        AvailableOperationList[]=content_move
+
+        */ ?>
 
 5. Override the digest settings with your own settings in `settings/override/autonotifications.ini.append.php`
 
