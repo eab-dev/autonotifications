@@ -279,7 +279,7 @@ class AutoNotificationsType extends eZWorkflowEventType
 	{
 		$ini = eZINI::instance( 'autonotifications.ini' );
 		$digestType = $ini->variable( 'DigestSettings', 'DigestType' ); // can be 'None', 'Daily', 'Weekly', 'Monthly'
-		if ( digestType != 'Skip' )
+		if ( $digestType != 'Skip' )
 		{
 			if ( method_exists( 'eZGeneralDigestUserSettings', 'fetchByUserId' ) )
 			{
@@ -296,7 +296,7 @@ class AutoNotificationsType extends eZWorkflowEventType
 					$settings = eZGeneralDigestUserSettings::create( $address );
 			}
 
-			if ( digestType == 'None' )
+			if ( $digestType == 'None' )
 			{
 				$settings->setAttribute( 'receive_digest', 0 );
 			}
