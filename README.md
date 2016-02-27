@@ -1,5 +1,7 @@
 autonotifications
-============
+=================
+
+eZ Publish legacy extension to add automatic notification settings when a user registers, including digest settings.
 
 SUMMARY
 ---------

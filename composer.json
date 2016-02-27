@@ -1,0 +1,22 @@
+{
+    "name": "eab/autonotifications",
+    "description": "Add automatic notification settings when a user registers, including digest settings",
+    "type": "ezpublish-legacy-extension",
+    "license": "GPL-2.0",
+    "authors": [
+        {
+            "name": "Pierre Martel",
+            "homepage": "http://projects.ez.no/autonotifications"
+        },
+        {
+            "name": "Andy Caiger",
+            "homepage": "http://www.eab.co.uk"
+        }
+    ],
+    "require": {
+        "ezsystems/ezpublish-legacy-installer": "*"
+    },
+    "extra": {
+        "ezpublish-legacy-extension-name": "autonotifications"
+    }
+}
